@@ -15,6 +15,13 @@ def list_networks() -> Dict:
     }
 
 
+@app.get("/networks/{chain_id}")
+def retrieve_network(chain_id: int) -> Dict:
+    if not (network := networks_repository.get_by_chain_id(chain_id)):
+        return {"error": "no network with this chain_id exists"}
+    return network.__dict__
+
+
 @app.post("/networks")
 def add_network(form: CreateNetworkForm):
     if networks_repository.get_by_chain_id(form.chain_id):
