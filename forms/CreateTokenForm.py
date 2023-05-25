@@ -11,14 +11,14 @@ TOKEN_TYPE = [element.value for element in TokenType]
 
 
 class CreateTokenForm(BaseModel):
-    address: str
+    address: Optional[str]
     name: str
     strategy: str
     network: str
     type: str
 
     @validator("address")
-    def validate_address(cls, value: str) -> str:
+    def validate_address(cls, value: Optional[str]) -> Optional[str]:
         return validate_eth_address("address", value)
 
     @validator("name")

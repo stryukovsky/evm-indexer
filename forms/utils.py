@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from urllib.parse import urlparse
 
 from web3 import Web3
@@ -17,7 +17,9 @@ def validate_positive(field: str, value: int) -> int:
     return value
 
 
-def validate_eth_address(field: str, value: str) -> str:
+def validate_eth_address(field: str, value: Optional[str]) -> Optional[str]:
+    if not value:
+        return None
     try:
         return Web3.to_checksum_address(value)
     except Exception:

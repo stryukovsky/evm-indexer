@@ -27,7 +27,7 @@ class SQLTokensRepository(TokensRepository, SQLRepository):
 
     def get_by_address(self, address: str) -> Optional[Token]:
         with self.engine.connect() as connection:
-            expression = select(Token).where(func.lower(Token.address) == address.lower())
+            expression = select(Token).where(Token.address == address)
             if not (row := connection.execute(expression).first()):
                 return None
             return self.row_to_instance(row)

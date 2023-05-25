@@ -18,6 +18,14 @@ DEFAULT_STEP = 1000
 class Base(DeclarativeBase):
     pass
 
+    def to_dict(self):
+        result = {}
+        for column in self.__table__.columns:
+            name = column.name
+            value = getattr(self, column.name)
+            result[name] = value
+        return result
+
 
 class NetworkType(enum.Enum):
     filterable = "filterable"
@@ -51,7 +59,7 @@ class Token(Base):
     __tablename__ = "token"
 
     address: Mapped[str] = mapped_column(String(ETHEREUM_ADDRESS_LENGTH), unique=True, nullable=True, primary_key=True)
-    name: Mapped[str] = mapped_column(String(STRING_LENGTH), nullable=True)
+    name: Mapped[str] = mapped_column(String(STRING_LENGTH))
     strategy: Mapped[str] = mapped_column(Enum(TokenStrategy))
     network: Mapped[int] = mapped_column(ForeignKey("network.chain_id"))
     type: Mapped[str] = mapped_column(Enum(TokenType))
@@ -61,6 +69,38 @@ class Token(Base):
     volume: Mapped[int] = mapped_column(Numeric(scale=INT256_SCALE_DECIMALS, precision=INT256_PRECISION_DECIMALS),
                                         default=0)
 
+    def to_dict(self):
+        return {
+            "address": self.address,
+            "name": self.name,
+            "strategy": self.strategy.value,
+            "network": self.network,
+            "type": self.type.value,
+            "tracking_params": {
+                "total_supply": str(self.total_supply),
+                "volume": str(self.volume),
+            }
+        }
+
+
+class HolderType(enum.Enum):
+    externally_owned_account = "externally_owned_account"
+    contract_account = "contract_account"
+
+
+class Holder(Base):
+    __tablename__ = "holder"
+    address: Mapped[str] = mapped_column(String(ETHEREUM_ADDRESS_LENGTH), unique=True, primary_key=True)
+
+    type: Mapped[str] = mapped_column(Enum(HolderType))
+    name: Mapped[str] = mapped_column(String(STRING_LENGTH))
+
+    def to_dict(self):
+        return {
+            "address": self.address,
+            "name": self.name,
+            "type": self.type.value,
+        }
 
 
 Base.metadata.create_all(engine)
