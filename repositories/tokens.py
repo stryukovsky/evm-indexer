@@ -3,7 +3,9 @@ from typing import List, Optional
 
 from sqlalchemy import Row, select, insert, func
 
-from database import Token
+from database import Token, Base as BaseModel, FUNGIBLE_TOKENS, NON_FUNGIBLE_TOKENS, ERC1155_TOKENS, FungibleBalance, \
+    NFTBalance, ERC1155Balance
+from typing import Type
 from .sql_repository import SQLRepository
 
 

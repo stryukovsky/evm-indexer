@@ -2,7 +2,7 @@ import enum
 import math
 import os
 
-from sqlalchemy import create_engine, ForeignKey, Numeric, BigInteger, String, Enum
+from sqlalchemy import create_engine, ForeignKey, Numeric, BigInteger, String, Enum, Integer
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 DATABASE_URL = os.environ["DATABASE_URL"]
@@ -43,6 +43,11 @@ class TokenType(enum.Enum):
     erc721 = "erc721"
     erc777 = "erc777"
     erc1155 = "erc1155"
+
+
+FUNGIBLE_TOKENS = [TokenType.native, TokenType.erc20, TokenType.erc777]
+NON_FUNGIBLE_TOKENS = [TokenType.erc721]
+ERC1155_TOKENS = [TokenType.erc1155]
 
 
 class Network(Base):
@@ -100,6 +105,60 @@ class Holder(Base):
             "address": self.address,
             "name": self.name,
             "type": self.type.value,
+        }
+
+
+class FungibleBalance(Base):
+    __tablename__ = "fungible_balance"
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True)
+
+    holder: Mapped[str] = mapped_column(ForeignKey("holder.address"))
+    token: Mapped[str] = mapped_column(ForeignKey("token.address"))
+
+    amount: Mapped[int] = mapped_column(Numeric(precision=INT256_PRECISION_DECIMALS, scale=INT256_SCALE_DECIMALS),
+                                        default=0)
+
+    def to_dict(self):
+        return {
+            "holder": self.holder,
+            "token": self.token,
+            "amount": int(self.amount),
+        }
+
+
+class NFTBalance(Base):
+    __tablename__ = "non_fungible_balance"
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True)
+
+    holder: Mapped[str] = mapped_column(ForeignKey("holder.address"))
+    token: Mapped[str] = mapped_column(ForeignKey("token.address"))
+
+    token_id: Mapped[int] = mapped_column(Numeric(precision=INT256_PRECISION_DECIMALS, scale=INT256_SCALE_DECIMALS))
+
+    def to_dict(self):
+        return {
+            "holder": self.holder,
+            "token": self.token,
+            "token_id": int(self.token_id),
+        }
+
+
+class ERC1155Balance(Base):
+    __tablename__ = "erc1155_balance"
+    id: Mapped[int] = mapped_column(Integer(), primary_key=True)
+
+    holder: Mapped[str] = mapped_column(ForeignKey("holder.address"))
+    token: Mapped[str] = mapped_column(ForeignKey("token.address"))
+
+    amount: Mapped[int] = mapped_column(Numeric(precision=INT256_PRECISION_DECIMALS, scale=INT256_SCALE_DECIMALS))
+    token_id: Mapped[int] = mapped_column(Numeric(precision=INT256_PRECISION_DECIMALS, scale=INT256_SCALE_DECIMALS))
+
+    def to_dict(self):
+        return {
+            "holder": self.holder,
+            "token": self.token,
+            "amount": int(self.amount),
+            "token_id": int(self.token_id),
         }
 
 

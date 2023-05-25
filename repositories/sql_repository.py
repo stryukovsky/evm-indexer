@@ -1,20 +1,29 @@
 import abc
-from sqlalchemy import Engine, Row
+from typing import List, Type
+
+from sqlalchemy import Engine, Row, select, insert
+from database import Base as BaseModel
 
 
 class SQLRepository(abc.ABC):
     engine: Engine
+    model: Type[BaseModel]
 
-    def __init__(self, engine: Engine):
+    def __init__(self, model: Type[BaseModel], engine: Engine):
         self.engine = engine
+        self.model = model
 
-    @abc.abstractmethod
-    def list(self):
-        pass
+    def list(self) -> List[Type[BaseModel]]:
+        with self.engine.connect() as connection:
+            expression = select(self.model)
+            rows = connection.execute(expression).fetchall()
+            return list(map(self.row_to_instance, rows))
 
-    @abc.abstractmethod
     def create(self, **kwargs):
-        pass
+        with self.engine.connect() as connection:
+            expression = insert(self.model).values(kwargs)
+            connection.execute(expression)
+            connection.commit()
 
     @staticmethod
     @abc.abstractmethod
