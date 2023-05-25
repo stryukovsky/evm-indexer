@@ -9,7 +9,9 @@ from .sql_repository import SQLRepository
 
 
 class NetworksRepository(ABC):
-    pass
+    @abc.abstractmethod
+    def get_by_chain_id(self, chain_id: int) -> Optional[Network]:
+        pass
 
 
 class SQLNetworksRepository(NetworksRepository, SQLRepository):
