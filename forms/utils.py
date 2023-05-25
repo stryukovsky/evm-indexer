@@ -2,6 +2,7 @@ from typing import List
 from urllib.parse import urlparse
 
 from web3 import Web3
+from database import STRING_LENGTH
 
 
 def validate_non_negative(field: str, value: int) -> int:
@@ -34,4 +35,10 @@ def validate_url(field: str, value: str) -> str:
 def validate_enum(field: str, values: List[str], value: str) -> str:
     if value not in values:
         raise ValueError(f"Bad choice for {field}. Expected one of {values}")
+    return value
+
+
+def validate_string_length(field: str, value: str) -> str:
+    if len(value) > STRING_LENGTH:
+        raise ValueError(f"Bad length of {value} at {field} field")
     return value
