@@ -1,20 +1,14 @@
 from fastapi import FastAPI
-from database import engine, Network, Token, Holder, FungibleBalance, NFTBalance, ERC1155Balance
-
-from repositories.networks import SQLNetworksRepository
-from repositories.tokens import SQLTokensRepository
-from repositories.holders import SQLHoldersRepository
-from repositories.balances import SQLFungibleBalancesRepository, SQLNFTBalancesRepository, SQLERC1155BalancesRepository
 
 app = FastAPI()
-
-networks_repository = SQLNetworksRepository(Network, engine)
-tokens_repository = SQLTokensRepository(Token, engine)
-holders_repository = SQLHoldersRepository(Holder, engine)
-fungible_balances_repository = SQLFungibleBalancesRepository(FungibleBalance, engine)
-nft_balances_repository = SQLFungibleBalancesRepository(NFTBalance, engine)
-erc1155_balances_repository = SQLFungibleBalancesRepository(ERC1155Balance, engine)
 
 import endpoints.networks
 import endpoints.tokens
 import endpoints.holders
+import endpoints.indexers
+
+from indexers.main import Worker
+
+Worker("polygon-mainnet-usdt-tracker", "0xc2132D05D31c914a87C6611C10748AEb04B58e8F", "event", "recipient", {
+    "recipient": '0xF07C30E4CD6cFff525791B4b601bD345bded7f47'
+}).cycle()

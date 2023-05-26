@@ -1,5 +1,5 @@
 from database import FUNGIBLE_TOKENS, NON_FUNGIBLE_TOKENS, ERC1155_TOKENS
-from main import fungible_balances_repository, nft_balances_repository, erc1155_balances_repository
+from database import fungible_balances_repository, nft_balances_repository, erc1155_balances_repository
 from repositories.balances import SQLBalancesRepository
 
 

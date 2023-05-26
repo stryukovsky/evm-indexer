@@ -12,6 +12,7 @@ class CreateNetworkForm(BaseModel):
     rpc_url: str
     max_step: int
     type: str
+    need_poa: bool
 
     @validator("chain_id")
     def validate_chain_id(cls, value: int) -> int:

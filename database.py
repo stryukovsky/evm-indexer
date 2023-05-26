@@ -2,7 +2,7 @@ import enum
 import math
 import os
 
-from sqlalchemy import create_engine, ForeignKey, Numeric, BigInteger, String, Enum, Integer
+from sqlalchemy import create_engine, ForeignKey, Numeric, BigInteger, String, Enum, Integer, Boolean
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 DATABASE_URL = os.environ["DATABASE_URL"]
@@ -58,6 +58,23 @@ class Network(Base):
     rpc_url: Mapped[str] = mapped_column(String())
     max_step: Mapped[int] = mapped_column(BigInteger(), default=DEFAULT_STEP)
     type: Mapped[str] = mapped_column(Enum(NetworkType))
+    need_poa: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
+class Indexer(Base):
+    __tablename__ = "indexer"
+
+    name: Mapped[str] = mapped_column(String(), unique=True, primary_key=True)
+    last_block: Mapped[int] = mapped_column(BigInteger(), default=0)
+
+    network: Mapped[int] = mapped_column(ForeignKey("network.chain_id"))
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "last_block": self.last_block,
+            "network": self.network
+        }
 
 
 class Token(Base):
@@ -163,3 +180,17 @@ class ERC1155Balance(Base):
 
 
 Base.metadata.create_all(engine)
+
+from repositories.balances import SQLFungibleBalancesRepository, SQLNFTBalancesRepository, SQLERC1155BalancesRepository
+from repositories.holders import SQLHoldersRepository
+from repositories.networks import SQLNetworksRepository
+from repositories.tokens import SQLTokensRepository
+from repositories.indexers import SQLIndexersRepository
+
+networks_repository = SQLNetworksRepository(Network, engine)
+tokens_repository = SQLTokensRepository(Token, engine)
+holders_repository = SQLHoldersRepository(Holder, engine)
+fungible_balances_repository = SQLFungibleBalancesRepository(FungibleBalance, engine)
+nft_balances_repository = SQLNFTBalancesRepository(NFTBalance, engine)
+erc1155_balances_repository = SQLERC1155BalancesRepository(ERC1155Balance, engine)
+indexers_repository = SQLIndexersRepository(Indexer, engine)

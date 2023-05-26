@@ -36,4 +36,4 @@ class SQLNetworksRepository(NetworksRepository, SQLRepository):
 
     @staticmethod
     def row_to_instance(row: Row) -> Network:
-        return Network(chain_id=row[0], name=row[1], rpc_url=row[2], max_step=row[3], type=row[4])
+        return Network(chain_id=row[0], name=row[1], rpc_url=row[2], max_step=row[3], type=row[4], need_poa=row[5])

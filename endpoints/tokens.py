@@ -6,7 +6,8 @@ from endpoints.utils import get_repository_by_token_type
 from forms.CreateTokenForm import CreateTokenForm
 from forms.RetrieveTokenForm import RetrieveTokenForm
 from forms.TokenBalanceForm import TokenBalanceForm
-from main import (app, tokens_repository)
+from main import app
+from database import tokens_repository
 
 
 @app.get("/tokens")
@@ -55,5 +56,8 @@ async def token_balance_of(address: str, holder: str) -> JSONResponse:
     if not (token := tokens_repository.get_by_address(validated_input.address)):
         return JSONResponse({"error": "token not found"}, status_code=404)
     repository = get_repository_by_token_type(token.type)
-    return JSONResponse(repository.get_balance(validated_input.address, validated_input.holder).to_dict(),
+    balance = repository.get_balance(validated_input.address, validated_input.holder)
+    if not balance:
+        return JSONResponse({"error": "balance not found"})
+    return JSONResponse(balance.to_dict(),
                         status_code=200)

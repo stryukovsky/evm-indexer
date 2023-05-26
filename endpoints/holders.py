@@ -1,7 +1,8 @@
 from typing import Dict
 
 from forms.CreateHolderForm import CreateHolderForm
-from main import app, holders_repository
+from main import app
+from database import holders_repository
 from fastapi.responses import JSONResponse
 
 
