@@ -2,6 +2,7 @@ from typing import Dict
 
 from database import indexers_repository, networks_repository
 from forms.CreateIndexerForm import CreateIndexerForm
+from forms.SetLastBlockForm import SetLastBlockForm
 from main import app
 from fastapi.responses import JSONResponse
 
@@ -30,3 +31,11 @@ async def retrieve_indexer(name: str):
     if not (indexer := indexers_repository.get_by_name(name)):
         return JSONResponse({"error": "not found"}, status_code=404)
     return indexer.to_dict()
+
+
+@app.patch("/indexers/{name}/set_last_block")
+async def set_last_block(name: str, form: SetLastBlockForm):
+    if not indexers_repository.get_by_name(name):
+        return JSONResponse({"error": "not found"}, status_code=404)
+    indexers_repository.set_last_block(name, **form.dict())
+    return JSONResponse({"status": "success"}, status_code=200)

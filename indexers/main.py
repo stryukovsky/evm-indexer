@@ -1,4 +1,5 @@
 import json
+import time
 from typing import Dict, List, Type
 
 from database import (
@@ -52,11 +53,15 @@ class Worker:
 
     def cycle(self):
         while True:
+            self.indexer = indexers_repository.get_by_name(self.indexer.name)
             latest_block = self.w3.eth.get_block("latest")["number"]
             from_block = self.indexer.last_block
             to_block = min(from_block + self.network.max_step, latest_block)
+            print(f"Fetching transfers [{from_block}; {to_block}]")
             token_actions = self.fetching_method.get_token_actions(from_block, to_block)
             self.strategy.start(token_actions)
+            indexers_repository.set_last_block(self.indexer.name, to_block)
+            time.sleep(1)
 
     def build_contract(self, token: Token) -> Contract:
         abi = self._get_abi(token.type)

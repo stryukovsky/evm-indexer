@@ -1,12 +1,13 @@
 import abc
 from typing import List, Callable, Type
 
+from web3 import Web3
 from web3.contract import Contract
 from web3.contract.base_contract import BaseContractEvent
+from web3.types import HexBytes
 
 from database import Token, NetworkType, FUNGIBLE_TOKENS, NON_FUNGIBLE_TOKENS, ERC1155_TOKENS
 from indexers.token_actions import TokenAction, FungibleTokenAction, NonFungibleTokenAction, ERC1155TokenAction
-from web3._utils.events import get_event_data
 
 
 class AbstractFetchingMethod(abc.ABC):
@@ -44,6 +45,15 @@ class EventFetchingMethod(AbstractFetchingMethod):
         if token_type in ERC1155_TOKENS:
             return ERC1155TokenAction
 
+    @staticmethod
+    def _get_token_event_hash(token_type: str) -> HexBytes:
+        if token_type in FUNGIBLE_TOKENS:
+            return Web3.keccak(text="Transfer(address,address,uint256)")
+        if token_type in NON_FUNGIBLE_TOKENS:
+            return Web3.keccak(text="Transfer(address,address,uint256)")
+        if token_type in ERC1155_TOKENS:
+            raise NotImplementedError()
+
     def get_token_actions(self, from_block: int, to_block: int) -> List[TokenAction]:
         if self.network_type == NetworkType.filterable:
             return self.__get_events_with_eth_filter(from_block, to_block)
@@ -61,10 +71,8 @@ class EventFetchingMethod(AbstractFetchingMethod):
     def __get_events_with_raw_filtering(self, from_block: int, to_block: int) -> List[TokenAction]:
         events = self.contract.w3.eth.get_logs(
             {'fromBlock': from_block, 'toBlock': to_block, 'address': self.contract.address})
+        result = []
         for event in events:
-            try:
-                parsed_event = get_event_data(self.event.w3.codec, self.event._get_event_abi(), event)
-                q = 1
-            except Exception as e:
-                print(e)
-        events = []
+            if token_action := self.token_action_type.from_raw_log(event):
+                result.append(token_action)
+        return result

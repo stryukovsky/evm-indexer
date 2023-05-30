@@ -5,7 +5,7 @@ from sqlalchemy import Row
 
 from database import Indexer
 from .sql_repository import SQLRepository
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 
 class IndexersRepository(abc.ABC):
@@ -14,8 +14,20 @@ class IndexersRepository(abc.ABC):
     def get_by_name(self, name: str) -> Optional[Indexer]:
         pass
 
+    @abc.abstractmethod
+    def set_last_block(self, name: str, last_block: int):
+        pass
+
 
 class SQLIndexersRepository(IndexersRepository, SQLRepository):
+    def set_last_block(self, name: str, last_block: int):
+        with self.engine.connect() as connection:
+            expression = update(Indexer).where(Indexer.name == name).values({
+                "last_block": last_block
+            })
+            connection.execute(expression)
+            connection.commit()
+
     def get_by_name(self, name: str) -> Optional[Indexer]:
         with self.engine.connect() as connection:
             expression = select(Indexer).where(Indexer.name == name)

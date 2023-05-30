@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, ForeignKey, Numeric, BigInteger, String, E
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 DATABASE_URL = os.environ["DATABASE_URL"]
-engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL)
 
 INT256_PRECISION_DECIMALS = int(math.ceil(math.log10(2 ** 256)))
 INT256_SCALE_DECIMALS = 0  # wei values has no decimal point
